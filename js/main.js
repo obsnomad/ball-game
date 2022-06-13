@@ -8,7 +8,7 @@ const buildStructure = (containerId) => {
   }
 
   const sourcePanel = new Panel().appendTo(container);
-  const targetPanel = new Panel().appendTo(container);
+  new Panel().appendTo(container);
 
   sourcePanel.generateBalls(20);
 };

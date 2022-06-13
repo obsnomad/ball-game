@@ -1,9 +1,9 @@
 import { convertColor, generateColorPart } from "./utils.js";
 
 class Ball {
-  static frictionFactor = 0.99;
+  static frictionFactor = 0.995;
   static velocityThreshold = 0.01;
-  static velocityMax = 10;
+  static velocityMax = 900;
   coords = [0, 0];
   velocity = [0, 0];
   dragData = { x: 0, y: 0, time: 0 };
@@ -14,6 +14,38 @@ class Ball {
     this.x = x;
     this.y = y;
     this.panel = panel;
+  }
+
+  static get radius() {
+    return parseFloat(
+      getComputedStyle(document.documentElement).getPropertyValue("--radius")
+    );
+  }
+
+  static get diameter() {
+    return Ball.radius * 2;
+  }
+
+  get x() {
+    return this.coords[0];
+  }
+
+  set x(value) {
+    this.coords[0] = value;
+    this.htmlElement.style.setProperty("--x", `${value}px`);
+  }
+
+  get y() {
+    return this.coords[1];
+  }
+
+  set y(value) {
+    this.coords[1] = value;
+    this.htmlElement.style.setProperty("--y", `${value}px`);
+  }
+
+  get isMoving() {
+    return Math.abs(this.velocity[0]) > 0 || Math.abs(this.velocity[1]) > 0;
   }
 
   render() {
@@ -28,38 +60,6 @@ class Ball {
     );
     this.htmlElement.draggable = true;
     this.htmlElement.parentObject = this;
-  }
-
-  set x(value) {
-    this.coords[0] = value;
-    this.htmlElement.style.setProperty("--x", `${value}px`);
-  }
-
-  get x() {
-    return this.coords[0];
-  }
-
-  set y(value) {
-    this.coords[1] = value;
-    this.htmlElement.style.setProperty("--y", `${value}px`);
-  }
-
-  get y() {
-    return this.coords[1];
-  }
-
-  get isMoving() {
-    return Math.abs(this.velocity[0]) > 0 || Math.abs(this.velocity[1]) > 0;
-  }
-
-  static get radius() {
-    return parseFloat(
-      getComputedStyle(document.documentElement).getPropertyValue("--radius")
-    );
-  }
-
-  static get diameter() {
-    return Ball.radius * 2;
   }
 
   appendTo(container) {

@@ -8,6 +8,14 @@ class Panel {
     this.render();
   }
 
+  get width() {
+    return this.bounds.width - Ball.diameter;
+  }
+
+  get height() {
+    return this.bounds.height - Ball.diameter;
+  }
+
   render() {
     this.htmlElement = document.createElement("div");
     this.htmlElement.className = "panel";
@@ -38,14 +46,6 @@ class Panel {
     this.checkIntersections();
   }
 
-  get width() {
-    return this.bounds.width - Ball.diameter;
-  }
-
-  get height() {
-    return this.bounds.height - Ball.diameter;
-  }
-
   generateBalls(count) {
     for (let i = 0; i < count; i++) {
       const x = Math.random() * this.width;
@@ -67,19 +67,21 @@ class Panel {
       let { x, y, velocity } = ball;
       let [hor, ver] = velocity;
 
+      const old = { hor, ver };
+
       if (x <= 0 && hor <= 0) {
-        hor = -hor - Math.min(0, x);
+        hor = -Math.min(hor, x);
         x = 0;
       } else if (x >= width && hor >= 0) {
-        hor = -hor - Math.max(0, x - width);
+        hor = -Math.max(hor, x - width);
         x = width;
       }
 
       if (y <= 0 && ver <= 0) {
-        ver = -ver - Math.min(0, y);
+        ver = -Math.min(ver, y);
         y = 0;
       } else if (y >= height && ver >= 0) {
-        ver = -ver - Math.max(0, y - height);
+        ver = -Math.max(ver, y - height);
         y = height;
       }
 
@@ -87,11 +89,15 @@ class Panel {
         const { x: otherX, y: otherY, velocity: otherVelocity } = otherBall;
         const overX = x - otherX;
         const overY = y - otherY;
-        const distance = Math.sqrt(overX ** 2 + overY ** 2);
-        if (distance <= diameter) {
-          otherBall.velocity = [hor - overX * 0.05, ver - overY * 0.05];
-          hor = otherVelocity[0] + overX * 0.05;
-          ver = otherVelocity[1] + overY * 0.05;
+        const angle = Math.abs(Math.atan(overY / overX));
+        const realOverX = Math.abs(overX) - diameter * Math.cos(angle);
+        const realOverY = Math.abs(overY) - diameter * Math.sin(angle);
+        if (realOverX <= 0 && realOverY <= 0) {
+          const deltaX = Math.sign(overX) * Math.abs(realOverX) * 0.05;
+          const deltaY = Math.sign(overY) * Math.abs(realOverY) * 0.05;
+          otherBall.velocity = [hor - deltaX, ver - deltaY];
+          hor = otherVelocity[0] + deltaX;
+          ver = otherVelocity[1] + deltaY;
         }
       });
 
@@ -106,10 +112,8 @@ class Panel {
     }
     this.balls = balls;
 
-    requestAnimationFrame(this.moveBalls.bind(this));
-
     if (isMoving) {
-      requestAnimationFrame(this.checkIntersections.bind(this));
+      requestAnimationFrame(this.moveBalls.bind(this));
     }
   }
 
