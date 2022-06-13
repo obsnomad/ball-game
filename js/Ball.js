@@ -78,10 +78,18 @@ class Ball {
     event.dataTransfer.setData("text/plain", this.id);
     event.dataTransfer.effectAllowed = "move";
     this.dragData = { x, y, time };
+    if (!this.dragElement) {
+      this.dragElement = this.htmlElement.cloneNode(true);
+      this.dragElement.style.position = "absolute";
+      this.dragElement.style.top = "-10%";
+    }
+    document.body.append(this.dragElement);
+    event.dataTransfer.setDragImage(this.dragElement, Ball.diameter, Ball.diameter);
   }
 
   dragEnd(event) {
     event.dataTransfer.dropEffect = "move";
+    this.dragElement.remove();
   }
 }
 
