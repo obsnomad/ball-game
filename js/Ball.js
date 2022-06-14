@@ -3,7 +3,6 @@ import { convertColor, generateColorPart } from "./utils.js";
 class Ball {
   static frictionFactor = 0.995;
   static velocityThreshold = 0.01;
-  static velocityMax = 900;
   coords = [0, 0];
   velocity = [0, 0];
   dragData = { x: 0, y: 0, time: 0 };

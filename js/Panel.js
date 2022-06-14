@@ -102,8 +102,8 @@ class Panel {
       });
 
       ball.velocity = [
-        Math.sign(hor) * Math.min(Math.abs(hor), Ball.velocityMax),
-        Math.sign(ver) * Math.min(Math.abs(ver), Ball.velocityMax),
+        Math.sign(hor) * Math.abs(hor),
+        Math.sign(ver) * Math.abs(ver),
       ];
 
       isMoving ||= ball.isMoving;
@@ -163,8 +163,8 @@ class Panel {
     dropBall.x = newX - this.bounds.left - Ball.radius;
     dropBall.y = newY - this.bounds.top - Ball.radius;
     dropBall.velocity = [
-      Math.sign(hor) * Math.min(Math.abs(hor), Ball.velocityMax),
-      Math.sign(ver) * Math.min(Math.abs(ver), Ball.velocityMax),
+      Math.sign(hor) * Math.abs(hor),
+      Math.sign(ver) * Math.abs(ver),
     ];
     requestAnimationFrame(this.checkIntersections.bind(this));
   }
