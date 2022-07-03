@@ -154,8 +154,11 @@ class Panel {
     event.preventDefault();
     const { clientX: newX, clientY: newY, timeStamp: newTime } = event;
 
-    const ballId = event.dataTransfer.getData("text/plain");
-    const dropBall = document.getElementById(ballId).parentObject;
+    const ball = document.getElementById(event.dataTransfer.getData("text/plain"));
+    if (!ball) {
+      return;
+    }
+    const dropBall = ball.parentObject;
     const { x, y, time } = dropBall.dragData;
     const hor = ((newX - x) / (newTime - time)) * 5;
     const ver = ((newY - y) / (newTime - time)) * 5;
