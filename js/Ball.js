@@ -1,7 +1,6 @@
 import { convertColor, generateColorPart } from "./utils.js";
 
 class Ball {
-  static frictionFactor = 0.995;
   static velocityThreshold = 0.01;
   coords = [0, 0];
   velocity = [0, 0];
@@ -77,18 +76,27 @@ class Ball {
     event.dataTransfer.setData("text/plain", this.id);
     event.dataTransfer.effectAllowed = "move";
     this.dragData = { x, y, time };
+    this.velocity = [0, 0];
+    this.coords = [];
     if (!this.dragElement) {
       this.dragElement = this.htmlElement.cloneNode(true);
       this.dragElement.style.position = "absolute";
       this.dragElement.style.top = "-10%";
     }
+    this.htmlElement.style.setProperty("opacity", "0");
     document.body.append(this.dragElement);
     event.dataTransfer.setDragImage(this.dragElement, Ball.diameter, Ball.diameter);
   }
 
   dragEnd(event) {
-    event.dataTransfer.dropEffect = "move";
+    this.htmlElement.style.removeProperty("opacity");
     this.dragElement.remove();
+    if (event.dataTransfer.dropEffect === "none") {
+      this.coords = [
+        parseFloat(this.htmlElement.style.getPropertyValue("--x")),
+        parseFloat(this.htmlElement.style.getPropertyValue("--y")),
+      ];
+    }
   }
 }
 

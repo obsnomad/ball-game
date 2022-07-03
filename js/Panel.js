@@ -1,11 +1,14 @@
 import Ball from "./Ball.js";
+import { vectorAdd, vectorDot, vectorMultiply, vectorSubtract } from "./utils.js";
 
 class Panel {
   bounds;
   balls = [];
 
-  constructor() {
+  constructor(frictionFactor) {
     this.render();
+    this.frictionFactor = frictionFactor;
+    this.changed = false;
   }
 
   get width() {
@@ -67,8 +70,6 @@ class Panel {
       let { x, y, velocity } = ball;
       let [hor, ver] = velocity;
 
-      const old = { hor, ver };
-
       if (x <= 0 && hor <= 0) {
         hor = -Math.min(hor, x);
         x = 0;
@@ -87,24 +88,30 @@ class Panel {
 
       this.balls.forEach((otherBall) => {
         const { x: otherX, y: otherY, velocity: otherVelocity } = otherBall;
-        const overX = x - otherX;
-        const overY = y - otherY;
-        const angle = Math.abs(Math.atan(overY / overX));
-        const realOverX = Math.abs(overX) - diameter * Math.cos(angle);
-        const realOverY = Math.abs(overY) - diameter * Math.sin(angle);
-        if (realOverX <= 0 && realOverY <= 0) {
-          const deltaX = Math.sign(overX) * Math.abs(realOverX) * 0.05;
-          const deltaY = Math.sign(overY) * Math.abs(realOverY) * 0.05;
-          otherBall.velocity = [hor - deltaX, ver - deltaY];
-          hor = otherVelocity[0] + deltaX;
-          ver = otherVelocity[1] + deltaY;
+        const overX = otherX - x;
+        const overY = otherY - y;
+        const quadDistance = overX ** 2 + overY ** 2;
+        if (quadDistance <= diameter ** 2) {
+          const angle = Math.atan(overY / overX);
+          const distance = diameter - Math.sqrt(quadDistance);
+          const shift = [distance * Math.cos(angle) / 2, distance * Math.sin(angle) / 2];
+
+          ball.x -= shift[0];
+          ball.y -= shift[1];
+          otherBall.x += shift[0];
+          otherBall.y += shift[1];
+
+          const normalizedShift = [shift[0] / distance, shift[1] / distance];
+          const dot = vectorDot(vectorAdd([hor, ver], shift), normalizedShift);
+          const otherDot = vectorDot(vectorSubtract(otherVelocity, shift), normalizedShift);
+          const optimized = otherDot - dot;
+
+          [hor, ver] = vectorAdd([hor, ver], vectorMultiply(normalizedShift, optimized));
+          otherBall.velocity = vectorSubtract(otherVelocity, vectorMultiply(normalizedShift, optimized));
         }
       });
 
-      ball.velocity = [
-        Math.sign(hor) * Math.abs(hor),
-        Math.sign(ver) * Math.abs(ver),
-      ];
+      ball.velocity = [hor, ver];
 
       isMoving ||= ball.isMoving;
 
@@ -118,7 +125,7 @@ class Panel {
   }
 
   moveBalls() {
-    let changed = false;
+    this.changed = false;
     this.balls.forEach((ball) => {
       const [x, y] = ball.velocity;
       if (
@@ -127,13 +134,13 @@ class Panel {
       ) {
         ball.x += x;
         ball.y += y;
-        ball.velocity = [x * Ball.frictionFactor, y * Ball.frictionFactor];
-        changed = true;
+        ball.velocity = [x * this.frictionFactor, y * this.frictionFactor];
+        this.changed = true;
       } else {
         ball.velocity = [0, 0];
       }
     });
-    if (changed) {
+    if (this.changed) {
       this.checkIntersections();
     }
   }
@@ -166,7 +173,9 @@ class Panel {
       Math.sign(hor) * Math.abs(hor),
       Math.sign(ver) * Math.abs(ver),
     ];
-    requestAnimationFrame(this.checkIntersections.bind(this));
+    if (!this.changed) {
+      requestAnimationFrame(this.moveBalls.bind(this));
+    }
   }
 }
 

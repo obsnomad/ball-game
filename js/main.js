@@ -7,8 +7,8 @@ const buildStructure = (containerId) => {
     throw "Container not found";
   }
 
-  const sourcePanel = new Panel().appendTo(container);
-  new Panel().appendTo(container);
+  const sourcePanel = new Panel(0.95).appendTo(container);
+  new Panel(0.999).appendTo(container);
 
   sourcePanel.generateBalls(20);
 };
