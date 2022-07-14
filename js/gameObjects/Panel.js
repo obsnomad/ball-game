@@ -1,27 +1,35 @@
 import Ball from "./Ball.js";
-import { vector } from "./utils.js";
-import { BALL_DIAMETER, VELOCITY_THRESHOLD } from "./config.js";
+import { vector } from "../utils.js";
+import { BALL_DIAMETER, VELOCITY_THRESHOLD } from "../config.js";
 
 class Panel {
   bounds;
   balls = [];
   changed = false;
 
-  constructor(container, frictionFactor, ballsAmount = 0) {
+  constructor(container, storage, frictionFactor, ballsAmount = 0) {
     this.htmlElement = document.createElement("div");
     this.htmlElement.className = "panel";
     this.htmlElement.parentObject = this;
+
+    this.frictionFactor = frictionFactor;
+    this.initialBallsAmount = ballsAmount;
+
+    this.storage = storage;
+    this.storage.attachPanel(this);
 
     this.unobserve();
     container.append(this.htmlElement);
     this.observe();
     this.resize();
 
-    if (ballsAmount > 0) {
-      this.generateBalls(ballsAmount);
-    }
-
-    this.frictionFactor = frictionFactor;
+    this.storage.getPanelData(this).then((balls) => {
+      if (balls) {
+        this.generateBallsFromStorage(balls);
+      } else {
+        this.generateBalls();
+      }
+    });
   }
 
   get width() {
@@ -48,13 +56,27 @@ class Panel {
     this.checkIntersections();
   }
 
-  generateBalls(amount) {
-    for (let i = 0; i < amount; i++) {
+  generateBallsFromStorage(balls) {
+    this.balls = balls.map(({ x, y, u, v, color }) => new Ball(this, x, y, [u, v], color));
+    this.checkIntersections();
+  }
+
+  generateBalls() {
+    if (!this.initialBallsAmount) {
+      return;
+    }
+    for (let i = 0; i < this.initialBallsAmount; i++) {
       const x = Math.random() * this.width;
       const y = Math.random() * this.height;
       this.balls.push(new Ball(this, x, y));
     }
     this.checkIntersections();
+  }
+
+  regenerateBalls() {
+    this.balls.forEach((ball) => ball.destroy());
+    this.balls = [];
+    this.generateBalls();
   }
 
   checkIntersections() {

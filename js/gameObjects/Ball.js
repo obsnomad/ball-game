@@ -1,22 +1,21 @@
-import { convertColor, generateColorPart, randomId } from "./utils.js";
-import { BALL_DIAMETER } from "./config.js";
+import { convertColor, generateColorPart, randomId } from "../utils.js";
+import { BALL_DIAMETER } from "../config.js";
 
 class Ball {
   coords = [0, 0];
-  velocity = [0, 0];
   dragData = { x: 0, y: 0, time: 0 };
 
-  constructor(panel, x = 0, y = 0) {
+  constructor(panel, x = 0, y = 0, velocity = [0, 0], color = null) {
     this.id = randomId("ball");
 
     this.htmlElement = document.createElement("div");
     this.htmlElement.className = "ball";
     this.htmlElement.id = this.id;
-    const color = Array.from({ length: 3 }, generateColorPart);
-    this.htmlElement.style.setProperty("--start-color", convertColor(color));
+    this.color = color ?? Array.from({ length: 3 }, generateColorPart);
+    this.htmlElement.style.setProperty("--start-color", convertColor(this.color));
     this.htmlElement.style.setProperty(
       "--end-color",
-      convertColor(color, -142)
+      convertColor(this.color, -142)
     );
 
     this.moveTo(panel.htmlElement);
@@ -24,6 +23,7 @@ class Ball {
 
     this.x = x;
     this.y = y;
+    this.velocity = velocity;
     this.panel = panel;
   }
 
@@ -87,6 +87,12 @@ class Ball {
         parseFloat(this.htmlElement.style.getPropertyValue("--y")),
       ];
     }
+  }
+
+  destroy() {
+    this.coords = [];
+    this.htmlElement.remove();
+    this.dragElement?.destroy();
   }
 }
 
