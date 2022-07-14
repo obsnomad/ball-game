@@ -3,7 +3,7 @@ import { vector } from "../utils.js";
 import { BALL_DIAMETER, VELOCITY_THRESHOLD } from "../config.js";
 
 class Panel {
-  bounds;
+  bounds = { width: 0, height: 0 };
   balls = [];
   changed = false;
 
@@ -52,8 +52,11 @@ class Panel {
   }
 
   resize() {
-    this.bounds = this.htmlElement.getBoundingClientRect();
-    this.checkIntersections();
+    const { width, height, left, top } = this.htmlElement.getBoundingClientRect();
+    if (this.bounds.width !== width || this.bounds.height !== height) {
+      this.bounds = { width, height, left, top };
+      this.checkIntersections();
+    }
   }
 
   generateBallsFromStorage(balls) {
