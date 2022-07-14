@@ -1,3 +1,5 @@
+import { AUTOSAVE_INTERVAL } from "../config.js";
+
 class Buttons {
   autosaveTimer = null;
   panels = [];
@@ -48,7 +50,7 @@ class Buttons {
       this.storage.setAuto(value);
     }
     if (value) {
-      this.autosaveTimer = setInterval(() => this.storage.update(), 1000);
+      this.autosaveTimer = setInterval(() => this.storage.update(), AUTOSAVE_INTERVAL);
     } else if (this.autosaveTimer) {
       clearInterval(this.autosaveTimer);
       this.autosaveTimer = null;
