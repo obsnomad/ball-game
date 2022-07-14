@@ -15,4 +15,4 @@ export const vector = {
   multiply: ([a, b], m) => [a * m, b * m],
   add: ([a1, b1], [a2, b2]) => [a1 + a2, b1 + b2],
   subtract: ([a1, b1], [a2, b2]) => [a1 - a2, b1 - b2],
-}
+};

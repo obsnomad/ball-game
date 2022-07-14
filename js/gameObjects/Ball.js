@@ -92,7 +92,7 @@ class Ball {
   destroy() {
     this.coords = [];
     this.htmlElement.remove();
-    this.dragElement?.destroy();
+    this.dragElement?.remove();
   }
 }
 
