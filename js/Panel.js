@@ -1,36 +1,35 @@
 import Ball from "./Ball.js";
-import { vectorAdd, vectorDot, vectorMultiply, vectorSubtract } from "./utils.js";
+import { vector } from "./utils.js";
+import { BALL_DIAMETER, VELOCITY_THRESHOLD } from "./config.js";
 
 class Panel {
   bounds;
   balls = [];
+  changed = false;
 
-  constructor(frictionFactor) {
-    this.render();
-    this.frictionFactor = frictionFactor;
-    this.changed = false;
-  }
-
-  get width() {
-    return this.bounds.width - Ball.diameter;
-  }
-
-  get height() {
-    return this.bounds.height - Ball.diameter;
-  }
-
-  render() {
+  constructor(container, frictionFactor, ballsAmount = 0) {
     this.htmlElement = document.createElement("div");
     this.htmlElement.className = "panel";
     this.htmlElement.parentObject = this;
-  }
 
-  appendTo(container) {
     this.unobserve();
     container.append(this.htmlElement);
     this.observe();
     this.resize();
-    return this;
+
+    if (ballsAmount > 0) {
+      this.generateBalls(ballsAmount);
+    }
+
+    this.frictionFactor = frictionFactor;
+  }
+
+  get width() {
+    return this.bounds.width - BALL_DIAMETER;
+  }
+
+  get height() {
+    return this.bounds.height - BALL_DIAMETER;
   }
 
   observe() {
@@ -49,18 +48,17 @@ class Panel {
     this.checkIntersections();
   }
 
-  generateBalls(count) {
-    for (let i = 0; i < count; i++) {
+  generateBalls(amount) {
+    for (let i = 0; i < amount; i++) {
       const x = Math.random() * this.width;
       const y = Math.random() * this.height;
-      this.balls.push(new Ball(x, y, this).appendTo(this.htmlElement));
+      this.balls.push(new Ball(this, x, y));
     }
     this.checkIntersections();
   }
 
   checkIntersections() {
     const { width, height } = this;
-    const { diameter } = Ball;
     const balls = [];
     let isMoving = false;
 
@@ -91,9 +89,9 @@ class Panel {
         const overX = otherX - x;
         const overY = otherY - y;
         const quadDistance = overX ** 2 + overY ** 2;
-        if (quadDistance <= diameter ** 2) {
+        if (quadDistance <= BALL_DIAMETER ** 2) {
           const angle = Math.atan(overY / overX);
-          const distance = diameter - Math.sqrt(quadDistance);
+          const distance = BALL_DIAMETER - Math.sqrt(quadDistance);
           const shift = [distance * Math.cos(angle) / 2, distance * Math.sin(angle) / 2];
 
           ball.x -= shift[0];
@@ -102,12 +100,12 @@ class Panel {
           otherBall.y += shift[1];
 
           const normalizedShift = [shift[0] / distance, shift[1] / distance];
-          const dot = vectorDot(vectorAdd([hor, ver], shift), normalizedShift);
-          const otherDot = vectorDot(vectorSubtract(otherVelocity, shift), normalizedShift);
+          const dot = vector.dot(vector.add([hor, ver], shift), normalizedShift);
+          const otherDot = vector.dot(vector.subtract(otherVelocity, shift), normalizedShift);
           const optimized = otherDot - dot;
 
-          [hor, ver] = vectorAdd([hor, ver], vectorMultiply(normalizedShift, optimized));
-          otherBall.velocity = vectorSubtract(otherVelocity, vectorMultiply(normalizedShift, optimized));
+          [hor, ver] = vector.add([hor, ver], vector.multiply(normalizedShift, optimized));
+          otherBall.velocity = vector.subtract(otherVelocity, vector.multiply(normalizedShift, optimized));
         }
       });
 
@@ -129,8 +127,8 @@ class Panel {
     this.balls.forEach((ball) => {
       const [x, y] = ball.velocity;
       if (
-        Math.abs(x) > Ball.velocityThreshold ||
-        Math.abs(y) > Ball.velocityThreshold
+        Math.abs(x) > VELOCITY_THRESHOLD ||
+        Math.abs(y) > VELOCITY_THRESHOLD
       ) {
         ball.x += x;
         ball.y += y;
@@ -168,14 +166,15 @@ class Panel {
     dropBall.panel.balls.splice(index, 1);
     dropBall.panel = this;
     this.balls.push(dropBall);
-    dropBall.appendTo(this.htmlElement);
+    dropBall.moveTo(this.htmlElement);
 
-    dropBall.x = newX - this.bounds.left - Ball.radius;
-    dropBall.y = newY - this.bounds.top - Ball.radius;
+    dropBall.x = newX - this.bounds.left - BALL_DIAMETER / 2;
+    dropBall.y = newY - this.bounds.top - BALL_DIAMETER / 2;
     dropBall.velocity = [
       Math.sign(hor) * Math.abs(hor),
       Math.sign(ver) * Math.abs(ver),
     ];
+
     if (!this.changed) {
       requestAnimationFrame(this.moveBalls.bind(this));
     }

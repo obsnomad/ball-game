@@ -1,27 +1,30 @@
-import { convertColor, generateColorPart } from "./utils.js";
+import { convertColor, generateColorPart, randomId } from "./utils.js";
+import { BALL_DIAMETER } from "./config.js";
 
 class Ball {
-  static velocityThreshold = 0.01;
   coords = [0, 0];
   velocity = [0, 0];
   dragData = { x: 0, y: 0, time: 0 };
 
-  constructor(x = 0, y = 0, panel) {
-    this.id = "ball" + Math.random().toString(16).slice(2);
-    this.render();
+  constructor(panel, x = 0, y = 0) {
+    this.id = randomId("ball");
+
+    this.htmlElement = document.createElement("div");
+    this.htmlElement.className = "ball";
+    this.htmlElement.id = this.id;
+    const color = Array.from({ length: 3 }, generateColorPart);
+    this.htmlElement.style.setProperty("--start-color", convertColor(color));
+    this.htmlElement.style.setProperty(
+      "--end-color",
+      convertColor(color, -142)
+    );
+
+    this.moveTo(panel.htmlElement);
+    this.setDraggable();
+
     this.x = x;
     this.y = y;
     this.panel = panel;
-  }
-
-  static get radius() {
-    return parseFloat(
-      getComputedStyle(document.documentElement).getPropertyValue("--radius")
-    );
-  }
-
-  static get diameter() {
-    return Ball.radius * 2;
   }
 
   get x() {
@@ -46,27 +49,14 @@ class Ball {
     return Math.abs(this.velocity[0]) > 0 || Math.abs(this.velocity[1]) > 0;
   }
 
-  render() {
-    this.htmlElement = document.createElement("div");
-    this.htmlElement.className = "ball";
-    this.htmlElement.id = this.id;
-    const color = Array.from({ length: 3 }, generateColorPart);
-    this.htmlElement.style.setProperty("--start-color", convertColor(color));
-    this.htmlElement.style.setProperty(
-      "--end-color",
-      convertColor(color, -142)
-    );
+  moveTo(container) {
+    container.append(this.htmlElement);
+    this.setDraggable();
+  }
+
+  setDraggable() {
     this.htmlElement.draggable = true;
     this.htmlElement.parentObject = this;
-  }
-
-  appendTo(container) {
-    container.append(this.htmlElement);
-    this.observe();
-    return this;
-  }
-
-  observe() {
     this.htmlElement.addEventListener("dragstart", this.dragStart.bind(this));
     this.htmlElement.addEventListener("dragend", this.dragEnd.bind(this));
   }
@@ -85,7 +75,7 @@ class Ball {
     }
     this.htmlElement.style.setProperty("opacity", "0");
     document.body.append(this.dragElement);
-    event.dataTransfer.setDragImage(this.dragElement, Ball.diameter, Ball.diameter);
+    event.dataTransfer.setDragImage(this.dragElement, BALL_DIAMETER, BALL_DIAMETER);
   }
 
   dragEnd(event) {

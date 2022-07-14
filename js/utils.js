@@ -8,7 +8,11 @@ export const convertColor = (color, modifier = 0) => {
   );
 };
 
-export const vectorDot = ([a1, b1], [a2, b2]) => a1 * a2 + b1 * b2;
-export const vectorMultiply = ([a, b], m) => [a * m, b * m];
-export const vectorAdd = ([a1, b1], [a2, b2]) => [a1 + a2, b1 + b2];
-export const vectorSubtract = ([a1, b1], [a2, b2]) => [a1 - a2, b1 - b2];
+export const randomId = (prefix = '') => prefix + Math.random().toString(16).slice(2);
+
+export const vector = {
+  dot: ([a1, b1], [a2, b2]) => a1 * a2 + b1 * b2,
+  multiply: ([a, b], m) => [a * m, b * m],
+  add: ([a1, b1], [a2, b2]) => [a1 + a2, b1 + b2],
+  subtract: ([a1, b1], [a2, b2]) => [a1 - a2, b1 - b2],
+}

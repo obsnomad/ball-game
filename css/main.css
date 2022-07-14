@@ -1,7 +1,7 @@
 :root {
   --x: auto;
   --y: auto;
-  --radius: 20px;
+  --ball-diameter: 0;
   --start-color: #ffffff;
   --end-color: #727272;
 }
@@ -33,7 +33,7 @@ body {
 
 .panel {
   position: relative;
-  border: var(--radius) solid transparent;
+  border: calc(var(--ball-diameter) / 2) solid transparent;
   outline: 1px solid #969696;
   background: #e1e1e1;
 }
@@ -47,8 +47,8 @@ body {
 .ball:before {
   content: '';
   position: absolute;
-  width: calc(var(--radius) * 2);
-  height: calc(var(--radius) * 2);
+  width: var(--ball-diameter);
+  height: var(--ball-diameter);
   transform: translate(-50%, -50%);
   border-radius: 50%;
   background: radial-gradient(circle at 30% 30%, var(--start-color), var(--end-color) 100%);
